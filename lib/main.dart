@@ -5,7 +5,7 @@ import 'package:open_file/open_file.dart';
 
 void main() {
   runApp(MyApp());
-}
+} 
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key); // Added named 'key' parameter
@@ -74,43 +74,114 @@ class _FileExplorerScreenState extends State<FileExplorerScreen> {
     });
   }
 
-  List<DropdownMenuItem<String>> _buildMenuItems(String path) {
-    List<DropdownMenuItem<String>> items = [];
+  List<Widget> _buildTreeView(String path) {
+    List<Widget> treeView = [];
     if (path != '/Users/poohhh') {
-      items.add(
-        DropdownMenuItem(
-          value: '...',
-          child: const Text('...'), // Added 'const' keyword
+      treeView.add(
+        ListTile(
+          title: const Text('...'), // Added 'const' keyword
+          leading: const Icon(Icons.folder),
+          onTap: () {
+            var parentDir = p.dirname(selectedPath!);
+            _loadDirectories(parentDir);
+          },
         ),
       );
     }
     for (var item in fileStructure[path] ?? []) {
       var isDirectory = Directory(item).existsSync();
 
-      items.add(
-        DropdownMenuItem(
-          value: item,
-          child: Row(
-            children: [
-              Icon(
-                isDirectory ? Icons.folder : Icons.insert_drive_file,
-                color: isDirectory
-                    ? const Color.fromRGBO(255, 233, 162, 1)
-                    : Colors.red,
-              ),
-              const SizedBox(width: 8),
-              Text(p.basename(item)),
-            ],
+      treeView.add(
+        ListTile(
+          title: Text(p.basename(item)),
+          leading: Icon(
+            isDirectory ? Icons.folder : Icons.insert_drive_file,
+            color: isDirectory
+                ? const Color.fromRGBO(255, 233, 162, 1)
+                : Colors.red,
           ),
+          onTap: () {
+            if (isDirectory) {
+              _loadDirectories(item);
+            } else {
+              OpenFile.open(item);
+            }
+          },
         ),
       );
     }
-    return items;
+    return treeView;
+  }
+
+  List<String> _getSubdirectories(String path) {
+    List<String> subdirectories = [];
+    for (var item in fileStructure[path] ?? []) {
+      if (Directory(item).existsSync()) {
+        subdirectories.add(item);
+      }
+    }
+    return subdirectories;
+  }
+
+  List<String> _getFiles(String path) {
+    List<String> files = [];
+    for (var item in fileStructure[path] ?? []) {
+      if (File(item).existsSync()) {
+        files.add(item);
+      }
+    }
+    return files;
+  }
+
+  Widget _buildTreeViewItem(String path) {
+    var isDirectory = Directory(path).existsSync();
+    var subdirectories = _getSubdirectories(path);
+    var files = _getFiles(path);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ListTile(
+          title: Text(p.basename(path)),
+          leading: Icon(
+            isDirectory ? Icons.folder : Icons.insert_drive_file,
+            color: isDirectory
+                ? const Color.fromRGBO(255, 233, 162, 1)
+                : Colors.red,
+          ),
+          onTap: () {
+            if (isDirectory) {
+              _loadDirectories(path);
+            } else {
+              OpenFile.open(path);
+            }
+          },
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var subdirectory in subdirectories)
+                _buildTreeViewItem(subdirectory),
+              for (var file in files)
+                ListTile(
+                  title: Text(p.basename(file)),
+                  leading: const Icon(Icons.insert_drive_file),
+                  onTap: () {
+                    OpenFile.open(file);
+                  },
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    var items = _buildMenuItems(selectedPath!);
+    var treeView = _buildTreeViewItem(selectedPath!);
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -118,6 +189,14 @@ class _FileExplorerScreenState extends State<FileExplorerScreen> {
           style: TextStyle(color: Colors.black, fontSize: 16.0),
         ),
         centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            var parentDir = p.dirname(selectedPath!);
+            _loadDirectories(parentDir);
+          },
+        ),
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -146,26 +225,21 @@ class _FileExplorerScreenState extends State<FileExplorerScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Container(
-              
-              child: DropdownButton<String>(
-                value: items.any((item) => item.value == selectedPath)
-                    ? selectedPath
-                    : null,
-                items: items,
-                onChanged: (String? newValue) {
-                  if (newValue == '...') {
-                    var parentDir = p.dirname(selectedPath!);
-                    _loadDirectories(parentDir);
-                  } else if (newValue != null) {
-                    if (Directory(newValue).existsSync()) {
-                      _loadDirectories(newValue);
-                    } else if (File(newValue).existsSync()) {
-                      OpenFile.open(newValue);
-                    }
-                  }
-                },
-                isExpanded: true,
+            Expanded(
+              child: ListView(
+                children: [
+                  if (selectedPath != '/Users/poohhh') ...[
+                    ListTile(
+                      title: Text(p.basename(p.dirname(selectedPath!))),
+                      leading: const Icon(Icons.folder),
+                      onTap: () {
+                        var parentDir = p.dirname(selectedPath!);
+                        _loadDirectories(parentDir);
+                      },
+                    ),
+                  ],
+                  treeView,
+                ],
               ),
             ),
           ],
