@@ -180,71 +180,71 @@ class _FileExplorerScreenState extends State<FileExplorerScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    var treeView = _buildTreeViewItem(selectedPath!);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "File explorer",
-          style: TextStyle(color: Colors.black, fontSize: 16.0),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            var parentDir = p.dirname(selectedPath!);
-            _loadDirectories(parentDir);
-          },
-        ),
-        backgroundColor: Colors.white,
+Widget build(BuildContext context) {
+  var treeView = _buildTreeViewItem(selectedPath!);
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text(
+        "File explorer",
+        style: TextStyle(color: Colors.black, fontSize: 16.0),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              'Current path: $selectedPath',
-              style: const TextStyle(color: Colors.black, fontSize: 16.0),
+      centerTitle: true,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: () {
+          var parentDir = p.dirname(selectedPath!);
+          _loadDirectories(parentDir);
+        },
+      ),
+      backgroundColor: Colors.white,
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Text(
+            'Current path: $selectedPath',
+            style: const TextStyle(color: Colors.black, fontSize: 16.0),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'File count for $fileExtension: $fileCount',
+            style: const TextStyle(color: Colors.black, fontSize: 16.0),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            onChanged: (value) {
+              setState(() {
+                fileExtension = value;
+                _loadDirectories(selectedPath!);
+              });
+            },
+            decoration: const InputDecoration(
+              labelText: 'Enter file extension',
             ),
-            const SizedBox(height: 8),
-            Text(
-              'File count for $fileExtension: $fileCount',
-              style: const TextStyle(color: Colors.black, fontSize: 16.0),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              onChanged: (value) {
-                setState(() {
-                  fileExtension = value;
-                  _loadDirectories(selectedPath!);
-                });
-              },
-              decoration: const InputDecoration(
-                labelText: 'Enter file extension',
-              ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: ListView(
-                children: [
-                  if (selectedPath != '/Users/poohhh') ...[
-                    ListTile(
-                      title: Text(p.basename(p.dirname(selectedPath!))),
-                      leading: const Icon(Icons.folder),
-                      onTap: () {
-                        var parentDir = p.dirname(selectedPath!);
-                        _loadDirectories(parentDir);
-                      },
-                    ),
-                  ],
-                  treeView,
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: ListView(
+              children: [
+                if (selectedPath != '/Users/poohhh') ...[
+                  ListTile(
+                    title: Text(p.basename(p.dirname(selectedPath!))),
+                    leading: const Icon(Icons.folder, color: Color.fromRGBO(255, 233, 162, 1)),
+                    onTap: () {
+                      var parentDir = p.dirname(selectedPath!);
+                      _loadDirectories(parentDir);
+                    },
+                  ),
                 ],
-              ),
+                treeView,
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
