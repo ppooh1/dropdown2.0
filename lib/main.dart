@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'File Explorer App',
       home: FileExplorerScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -167,7 +168,7 @@ class _FileExplorerScreenState extends State<FileExplorerScreen> {
               for (var file in files)
                 ListTile(
                   title: Text(p.basename(file)),
-                  leading: const Icon(Icons.insert_drive_file),
+                    leading: const Icon(Icons.insert_drive_file, color: Colors.red),
                   onTap: () {
                     OpenFile.open(file);
                   },
