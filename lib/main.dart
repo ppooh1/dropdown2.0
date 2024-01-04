@@ -44,7 +44,8 @@ class _FileExplorerScreenState extends State<FileExplorerScreen> {
   void _loadDirectories(String path) {
     var directory = Directory(path);
     List<String> subdirectories = [];
-    List<String> files = [];
+    List
+    <String> files = [];
     int count = 0;
     try {
       directory.listSync().forEach((item) {
@@ -135,52 +136,52 @@ class _FileExplorerScreenState extends State<FileExplorerScreen> {
   }
 
   Widget _buildTreeViewItem(String path) {
-    var isDirectory = Directory(path).existsSync();
-    var subdirectories = _getSubdirectories(path);
-    var files = _getFiles(path);
+  var isDirectory = Directory(path).existsSync();
+  var subdirectories = _getSubdirectories(path);
+  var files = _getFiles(path);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ListTile(
-          title: Text(p.basename(path)),
-          leading: Icon(
-            isDirectory ? Icons.folder : Icons.insert_drive_file,
-            color: isDirectory
-                ? const Color.fromRGBO(255, 233, 162, 1)
-                : Colors.red,
-          ),
-          onTap: () {
-            if (isDirectory) {
-              _loadDirectories(path);
-            } else {
-              OpenFile.open(path);
-            }
-          },
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      ListTile(
+        title: Text(p.basename(path)),
+        leading: Icon(
+          isDirectory ? Icons.folder : Icons.insert_drive_file,
+          color: isDirectory
+              ? const Color.fromRGBO(255, 233, 162, 1)
+              : Colors.red,
         ),
-        Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var subdirectory in subdirectories)
-                _buildTreeViewItem(subdirectory),
-              for (var file in files)
-                ListTile(
-                  title: Text(p.basename(file)),
-                    leading: const Icon(Icons.insert_drive_file, color: Colors.red),
-                  onTap: () {
-                    OpenFile.open(file);
-                  },
-                ),
-            ],
-          ),
+        onTap: () {
+          if (isDirectory) {
+            _loadDirectories(path);
+          } else {
+            OpenFile.open(path);
+          }
+        },
+      ),
+      Padding(
+        padding: const EdgeInsets.only(left: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (var subdirectory in subdirectories)
+              _buildTreeViewItem(subdirectory),
+            for (var file in files)
+              ListTile(
+                title: Text(p.basename(file)),
+                  leading: const Icon(Icons.insert_drive_file, color: Colors.red),
+                onTap: () {
+                  OpenFile.open(file);
+                },
+              ),
+          ],
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
 
-  @override
+@override
 Widget build(BuildContext context) {
   var treeView = _buildTreeViewItem(selectedPath!);
   return Scaffold(
@@ -227,22 +228,22 @@ Widget build(BuildContext context) {
           ),
           const SizedBox(height: 8),
           Expanded(
-            child: ListView(
-              children: [
-                if (selectedPath != '/Users/poohhh') ...[
-                  ListTile(
-                    title: Text(p.basename(p.dirname(selectedPath!))),
-                    leading: const Icon(Icons.folder, color: Color.fromRGBO(255, 233, 162, 1)),
-                    onTap: () {
-                      var parentDir = p.dirname(selectedPath!);
-                      _loadDirectories(parentDir);
-                    },
-                  ),
-                ],
-                treeView,
-              ],
-            ),
+  child: ListView(
+    children: [
+      for (var path in p.split(selectedPath!))
+        if (path != p.basename(selectedPath!)) // Add this condition
+          ListTile(
+            title: Text(path),
+            leading: const Icon(Icons.folder, color: Color.fromRGBO(255, 233, 162, 1)),
+            onTap: () {
+              var parentDir = p.dirname(selectedPath!);
+              _loadDirectories(parentDir);
+            },
           ),
+      treeView,
+    ],
+  ),
+),
         ],
       ),
     ),
